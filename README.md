@@ -23,5 +23,35 @@ Fresh workspace ready to scaffold a unified sales, support, and stock management
 4. Implement baseline pages: auth gate, dashboard shell, nav, placeholder modules
 5. Automate infra: lint/test workflow, quality hooks, deployment targets
 
+## Database Setup
+
+Initial Postgres objects live in `supabase/migrations/20250221120000_initial_schema.sql` and define:
+
+- `profiles` (extends `auth.users` with roles, names, territories)
+- CRM entities (`customers`, `catalog_items`, `offers`, `offer_items`, `offer_approvals`)
+- Offer reference counters, helper functions, triggers, and row-level security policies
+- `documents` metadata for the internal file repository
+
+### Apply with Supabase CLI
+
+```
+# install once
+npm install -g supabase
+
+# initialise local project metadata (creates supabase/config.toml)
+supabase init
+
+# link to a Supabase project (repeat per environment)
+supabase link --project-ref <project-ref>
+
+# reset your local database to match migrations
+supabase db reset --schema public
+
+# or push migrations straight to the linked project (use with care)
+supabase db push
+```
+
+Helper functions such as `public.is_manager()` and the RLS policies expect each authenticated user to receive a `profiles` row via the `handle_new_user` trigger. Seed the appropriate roles (`sales_rep`, `manager`, `admin`) after the first login events.
+
 ## Working Directory
 Repository is currently empty — add app code, database migrations, and tooling from scratch.
