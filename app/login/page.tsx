@@ -11,10 +11,11 @@ export default function LoginPage() {
     const supabase = getSupabase()
     const url = new URL(window.location.href)
     const code = url.searchParams.get('code')
+    const next = url.searchParams.get('next')
     if (code) {
       supabase.auth.exchangeCodeForSession(code as string).then(({ error }) => {
         if (error) setErr(error.message)
-        else window.location.href = '/'
+        else window.location.href = next || '/'
       })
     }
   }, [])
@@ -23,7 +24,11 @@ export default function LoginPage() {
     const supabase = getSupabase()
     setErr(''); setMsg('')
     if (!email) { setErr('Enter your email'); return }
-    const redirectTo = `${window.location.origin}/login`
+    const params = new URLSearchParams(window.location.search)
+    const next = params.get('next')
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+    const redirectPath = next ? `/login?next=${encodeURIComponent(next)}` : '/login'
+    const redirectTo = `${baseUrl}${redirectPath}`
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: redirectTo, shouldCreateUser: true }
