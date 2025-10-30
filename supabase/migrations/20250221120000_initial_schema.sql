@@ -16,18 +16,6 @@ begin
 end;
 $$;
 
-create or replace function public.is_manager()
-returns boolean
-language sql
-stable
-as $$
-  select exists (
-    select 1
-    from public.profiles p
-    where p.id = auth.uid()
-      and p.role in ('manager', 'admin')
-  );
-$$;
 
 create or replace function public.generate_offer_reference()
 returns text
@@ -98,6 +86,18 @@ create table public.profiles (
 create trigger set_profiles_updated_at
   before update on public.profiles
   for each row execute function public.update_updated_at();
+
+-- now that profiles exists, create helper to check manager/admin role
+create or replace function public.is_manager()
+returns boolean
+language sql
+stable
+as $$
+  select exists (
+    select 1 from public.profiles p
+    where p.id = auth.uid() and p.role in ('manager','admin')
+  );
+$$;
 
 create table public.customers (
   id uuid primary key default gen_random_uuid(),
